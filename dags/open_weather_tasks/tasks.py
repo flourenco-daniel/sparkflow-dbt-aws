@@ -29,7 +29,7 @@ def _get_open_weather(lat, lon):
     url = "https://api.openweathermap.org/data/3.0/onecall"
     exclude = "minutely,daily"
 
-    url = f"{url}?lat={lat}&lon={lon}&exclude{exclude}&appid={api_key}"
+    url = f"{api.host}?lat={lat}&lon={lon}&exclude{exclude}&appid={api_key}"
     response = requests.get(url)
     return json.dumps(response.json())
 
