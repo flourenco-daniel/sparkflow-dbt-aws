@@ -1,7 +1,3 @@
-from socket import timeout
-import requests
-import json
-import os
 from airflow.decorators import dag, task
 from datetime import datetime, timedelta
 from airflow.sensors.base import PokeReturnValue
@@ -11,6 +7,7 @@ from open_weather_tasks.tasks import  _get_open_weather, _store_weather_data, BU
 
 @dag(
     start_date = datetime(2025, 9, 23),
+    dag_id="open_weather",
     schedule='@daily',
     catchup=True,
     tags=['weather_api'],
@@ -31,6 +28,17 @@ def open_weather():
         return PokeReturnValue(is_done=condition, xcom_value=url)
 
     @task
-    def _get_open_weather():
+    def get_open_weather():
         return _get_open_weather("-19.30", "-43.61")
 
+    @task
+    def store_weather_data(weather_data):
+        return _store_weather_data(weather_data=weather_data)
+
+    api_ok = is_api_available()
+    data = get_open_weather()
+    store_weather_data(data)
+
+    api_ok >> data
+
+open_weather()

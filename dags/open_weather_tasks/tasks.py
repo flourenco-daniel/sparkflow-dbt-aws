@@ -29,9 +29,11 @@ def _get_open_weather(lat, lon):
     url = "https://api.openweathermap.org/data/3.0/onecall"
     exclude = "minutely,daily"
 
-    url = f"{api.host}?lat={lat}&lon={lon}&exclude{exclude}&appid={api_key}"
+    url = f"{api.host}lat={lat}&lon={lon}&exclude={exclude}&appid={api_key}"
     response = requests.get(url)
+    print(url)
     return json.dumps(response.json())
+
 
 def _store_weather_data(weather_data):
     client = _get_s3_connection()
@@ -43,14 +45,13 @@ def _store_weather_data(weather_data):
             client.create_bucket(Bucket=BUCKET_NAME)
 
     weather_data = json.loads(weather_data)
-    location = weather_data.get('lat', 'lon')
+    location = f"{weather_data.get('lat')}_{weather_data.get('lon')}"
     data = json.dumps(weather_data, ensure_ascii=False).encode('utf8')
 
     objw = client.put_object(
         Bucket=BUCKET_NAME,
-        object_name=f'raw/weather/{location}/weather_data.json',
-        data=BytesIO(data),
-        length=len(data)
-    )
+        Key=f'raw/weather/{location}/weather_data.json',
+        Body=BytesIO(data),
+        ContentType="application/json")
 
-    return f"{objw.Bucket}/{location}"
+    return f"s3://{BUCKET_NAME}/raw/weather/{location}/weather_data.json"
