@@ -1,6 +1,6 @@
 from airflow.hooks.base import BaseHook
 import json
-import os
+import datetime
 import boto3
 from dotenv import load_dotenv
 from io import BytesIO
@@ -47,11 +47,15 @@ def _store_weather_data(weather_data):
     weather_data = json.loads(weather_data)
     location = f"{weather_data.get('lat')}_{weather_data.get('lon')}"
     data = json.dumps(weather_data, ensure_ascii=False).encode('utf8')
+    timestamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M")
+    key = f"raw/weather/{location}/weather_data_{timestamp}.json"
 
     objw = client.put_object(
         Bucket=BUCKET_NAME,
-        Key=f'raw/weather/{location}/weather_data.json',
+        Key=key,
         Body=BytesIO(data),
         ContentType="application/json")
 
-    return f"s3://{BUCKET_NAME}/raw/weather/{location}/weather_data.json"
+    return f"s3://{BUCKET_NAME}/{key}"
+
+

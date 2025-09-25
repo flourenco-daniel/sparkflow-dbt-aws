@@ -1,3 +1,4 @@
+from pickle import FALSE
 from airflow.decorators import dag, task
 from datetime import datetime, timedelta
 from airflow.sensors.base import PokeReturnValue
@@ -9,7 +10,7 @@ from open_weather_tasks.tasks import  _get_open_weather, _store_weather_data, BU
     start_date = datetime(2025, 9, 23),
     dag_id="open_weather",
     schedule='@daily',
-    catchup=True,
+    catchup=False,
     tags=['weather_api'],
 
 )
